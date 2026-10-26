@@ -3,29 +3,28 @@ extends Node2D
 @onready var ball: RigidBody2D = $Ball
 @onready var trajectory: Node2D = $Trajectory
 @onready var shot_label: Label = $UI/ShotLabel
-@onready var goal_label: Label = $UI.get_node_or_null("GoalLabel")
-@onready var result_label: Label = $UI.get_node_or_null("ResultLabel")
+@onready var target_label: Label = $UI/TargetLabel
+@onready var complete_label: Label = $UI/CompleteLabel
 @onready var restart_button: Button = $UI/RestartButton
 @onready var main_menu_button: Button = $UI/MainMenuButton
 @onready var ball_spawn: Marker2D = $BallSpawn
-@onready var goal_area: Area2D = get_node_or_null("GoalArea")
-@onready var special_orb: RigidBody2D = get_node_or_null("SpecialOrb")
 
 var dragging := false
 var shot_count := 0
 var game_over := false
-var result_state := ""
 
 func _ready() -> void:
     ball.position = ball_spawn.position
     ball.reset_motion()
     ball.freeze = true
 
+    ball.body_entered.connect(_on_ball_body_entered)
     restart_button.pressed.connect(_on_restart_pressed)
     main_menu_button.pressed.connect(_on_main_menu_pressed)
 
-    if goal_area:
-        goal_area.body_entered.connect(_on_goal_entered)
+    restart_button.visible = false
+    main_menu_button.visible = false
+    complete_label.visible = false
 
     _update_ui()
     _update_trajectory()
@@ -57,9 +56,6 @@ func _process(_delta: float) -> void:
         _update_trajectory()
 
     if ball.global_position.y > 900:
-        _trigger_lose()
-
-    if is_instance_valid(special_orb) and special_orb.global_position.y > 900:
         _trigger_lose()
 
 func _can_drag_ball() -> bool:
@@ -110,29 +106,43 @@ func _update_trajectory() -> void:
     trajectory.points = points
     trajectory.queue_redraw()
 
+func _count_targets() -> int:
+    var count := 0
+    for block in get_tree().get_nodes_in_group("blocks"):
+        if is_instance_valid(block):
+            count += 1
+    return count
+
+func _all_targets_destroyed() -> bool:
+    return _count_targets() == 0
+
 func _update_ui() -> void:
     shot_label.text = "Shots: %d" % shot_count
-    if goal_label:
-        goal_label.text = "Goal: Bring orb to the cup"
+    target_label.text = "Targets: %d" % _count_targets()
+
+func _on_ball_body_entered(body: Node) -> void:
+    if not is_instance_valid(body):
+        return
+
+    if body.is_in_group("blocks"):
+        body.queue_free()
+        _update_ui()
+
+        if _all_targets_destroyed():
+            _trigger_win()
 
 func _trigger_win() -> void:
     if game_over:
         return
 
     game_over = true
-    result_state = "won"
-
-    if result_label:
-        result_label.text = "YOU WON!"
-        result_label.visible = true
-
+    complete_label.text = "LEVEL COMPLETE!"
+    complete_label.visible = true
     restart_button.visible = true
     main_menu_button.visible = true
 
     if is_instance_valid(ball):
         ball.freeze = true
-    if is_instance_valid(special_orb):
-        special_orb.freeze = true
 
     for block in get_tree().get_nodes_in_group("blocks"):
         if is_instance_valid(block):
@@ -143,27 +153,17 @@ func _trigger_lose() -> void:
         return
 
     game_over = true
-    result_state = "lost"
-
-    if result_label:
-        result_label.text = "YOU LOSE!"
-        result_label.visible = true
-
+    complete_label.text = "YOU LOSE!"
+    complete_label.visible = true
     restart_button.visible = true
     main_menu_button.visible = true
 
     if is_instance_valid(ball):
         ball.freeze = true
-    if is_instance_valid(special_orb):
-        special_orb.freeze = true
 
     for block in get_tree().get_nodes_in_group("blocks"):
         if is_instance_valid(block):
             block.freeze = true
-
-func _on_goal_entered(body: Node2D) -> void:
-    if body == special_orb:
-        _trigger_win()
 
 func _restart_level() -> void:
     get_tree().reload_current_scene()
