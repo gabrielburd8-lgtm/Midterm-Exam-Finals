@@ -1,0 +1,184 @@
+[gd_scene load_steps=9 format=3]
+
+[ext_resource type="Script" path="res://scripts/Level.gd" id="1_2xv4u"]
+[ext_resource type="Script" path="res://scripts/Trajectory.gd" id="2_5k4oj"]
+[ext_resource type="Script" path="res://scripts/Ball.gd" id="3_c9m7r"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_ground"]
+size = Vector2(1280, 80)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_wall"]
+size = Vector2(40, 720)
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_ball"]
+radius = 18.0
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_target"]
+size = Vector2(64, 32)
+
+[node name="Level" type="Node2D"]
+script = ExtResource("1_2xv4u")
+
+[node name="Background" type="ColorRect" parent="."]
+offset_right = 1280.0
+offset_bottom = 720.0
+color = Color(0.956863, 0.945098, 0.917647, 1)
+
+[node name="Trajectory" type="Node2D" parent="."]
+script = ExtResource("2_5k4oj")
+
+[node name="BallSpawn" type="Marker2D" parent="."]
+position = Vector2(180, 540)
+
+[node name="Ground" type="StaticBody2D" parent="."]
+position = Vector2(640, 670)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Ground"]
+shape = SubResource("RectangleShape2D_ground")
+
+[node name="Polygon2D" type="Polygon2D" parent="Ground"]
+color = Color(0.08, 0.12, 0.2, 1)
+polygon = PackedVector2Array(-640, 40, 640, 40, 640, -40, -640, -40)
+
+[node name="WallLeft" type="StaticBody2D" parent="."]
+position = Vector2(-20, 360)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="WallLeft"]
+shape = SubResource("RectangleShape2D_wall")
+
+[node name="Polygon2D" type="Polygon2D" parent="WallLeft"]
+color = Color(0.08, 0.12, 0.2, 1)
+polygon = PackedVector2Array(-20, -360, 20, -360, 20, 360, -20, 360)
+
+[node name="WallRight" type="StaticBody2D" parent="."]
+position = Vector2(1300, 360)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="WallRight"]
+shape = SubResource("RectangleShape2D_wall")
+
+[node name="Polygon2D" type="Polygon2D" parent="WallRight"]
+color = Color(0.08, 0.12, 0.2, 1)
+polygon = PackedVector2Array(-20, -360, 20, -360, 20, 360, -20, 360)
+
+[node name="Ball" type="RigidBody2D" parent="."]
+position = Vector2(180, 540)
+mass = 1.0
+gravity_scale = 1.0
+linear_damp = 0.12
+angular_damp = 0.8
+contact_monitor = true
+max_contacts_reported = 8
+script = ExtResource("3_c9m7r")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Ball"]
+shape = SubResource("CircleShape2D_ball")
+
+[node name="Polygon2D" type="Polygon2D" parent="Ball"]
+color = Color(0.2, 0.5, 1, 1)
+polygon = PackedVector2Array(18, 0, 16, 7, 10, 14, 2, 18, -7, 16, -14, 10, -18, 2, -16, -7, -11, -14, -2, -18, 7, -17, 14, -10, 18, -3)
+
+[node name="Target1" type="RigidBody2D" parent="." groups=["targets"]]
+position = Vector2(930, 560)
+mass = 1.5
+gravity_scale = 1.0
+linear_damp = 0.5
+angular_damp = 0.8
+contact_monitor = true
+max_contacts_reported = 4
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Target1"]
+shape = SubResource("RectangleShape2D_target")
+
+[node name="Polygon2D" type="Polygon2D" parent="Target1"]
+color = Color(0.92, 0.48, 0.4, 1)
+polygon = PackedVector2Array(-32, -16, 32, -16, 32, 16, -32, 16)
+
+[node name="Target2" type="RigidBody2D" parent="." groups=["targets"]]
+position = Vector2(1010, 560)
+mass = 1.5
+gravity_scale = 1.0
+linear_damp = 0.5
+angular_damp = 0.8
+contact_monitor = true
+max_contacts_reported = 4
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Target2"]
+shape = SubResource("RectangleShape2D_target")
+
+[node name="Polygon2D" type="Polygon2D" parent="Target2"]
+color = Color(0.35, 0.72, 0.74, 1)
+polygon = PackedVector2Array(-32, -16, 32, -16, 32, 16, -32, 16)
+
+[node name="Target3" type="RigidBody2D" parent="." groups=["targets"]]
+position = Vector2(1090, 560)
+mass = 1.5
+gravity_scale = 1.0
+linear_damp = 0.5
+angular_damp = 0.8
+contact_monitor = true
+max_contacts_reported = 4
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Target3"]
+shape = SubResource("RectangleShape2D_target")
+
+[node name="Polygon2D" type="Polygon2D" parent="Target3"]
+color = Color(0.95, 0.77, 0.27, 1)
+polygon = PackedVector2Array(-32, -16, 32, -16, 32, 16, -32, 16)
+
+[node name="Target4" type="RigidBody2D" parent="." groups=["targets"]]
+position = Vector2(970, 500)
+mass = 1.5
+gravity_scale = 1.0
+linear_damp = 0.5
+angular_damp = 0.8
+contact_monitor = true
+max_contacts_reported = 4
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Target4"]
+shape = SubResource("RectangleShape2D_target")
+
+[node name="Polygon2D" type="Polygon2D" parent="Target4"]
+color = Color(0.73, 0.45, 0.88, 1)
+polygon = PackedVector2Array(-32, -16, 32, -16, 32, 16, -32, 16)
+
+[node name="Target5" type="RigidBody2D" parent="." groups=["targets"]]
+position = Vector2(1050, 500)
+mass = 1.5
+gravity_scale = 1.0
+linear_damp = 0.5
+angular_damp = 0.8
+contact_monitor = true
+max_contacts_reported = 4
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Target5"]
+shape = SubResource("RectangleShape2D_target")
+
+[node name="Polygon2D" type="Polygon2D" parent="Target5"]
+color = Color(0.38, 0.57, 0.9, 1)
+polygon = PackedVector2Array(-32, -16, 32, -16, 32, 16, -32, 16)
+
+[node name="UILayer" type="CanvasLayer" parent="."]
+layer = 2
+
+[node name="ShotsLabel" type="Label" parent="UILayer"]
+offset_left = 24.0
+offset_top = 18.0
+offset_right = 180.0
+offset_bottom = 52.0
+theme_override_font_sizes/font_size = 24
+text = "Shots: 0"
+
+[node name="CompleteLabel" type="Label" parent="UILayer"]
+visible = false
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -140.0
+offset_top = -26.0
+offset_right = 140.0
+offset_bottom = 26.0
+theme_override_font_sizes/font_size = 32
+text = "LEVEL COMPLETE!"
+horizontal_alignment = 1

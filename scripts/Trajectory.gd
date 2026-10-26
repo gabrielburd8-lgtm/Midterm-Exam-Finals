@@ -1,6 +1,6 @@
 extends Node2D
 
-@export var color: Color = Color(0.4, 0.45, 0.85, 0.8)
+@export var color: Color = Color(0.4, 0.46, 0.85, 0.8)
 var points: PackedVector2Array = PackedVector2Array()
 
 func _draw() -> void:

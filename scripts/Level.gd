@@ -13,6 +13,7 @@ var level_complete := false
 func _ready() -> void:
     ball.position = ball_spawn.position
     ball.reset_motion()
+    ball.freeze = true
 
     for target in get_tree().get_nodes_in_group("targets"):
         if is_instance_valid(target):
@@ -26,8 +27,11 @@ func _input(event: InputEvent) -> void:
         var mouse_pos = get_global_mouse_position()
 
         if event.pressed:
-            if _can_drag_ball() and (ball.global_position - mouse_pos).length() < 90.0:
+            if _can_drag_ball() and (ball.global_position - mouse_pos).length() < 110.0:
                 dragging = true
+                ball.freeze = true
+                ball.linear_velocity = Vector2.ZERO
+                ball.angular_velocity = 0.0
         elif dragging:
             _launch_ball()
 
@@ -41,7 +45,7 @@ func _process(_delta: float) -> void:
 func _can_drag_ball() -> bool:
     if level_complete:
         return false
-    return !ball.is_moving() and !dragging
+    return not ball.is_moving() and not dragging
 
 func _launch_ball() -> void:
     if not dragging:
@@ -50,10 +54,12 @@ func _launch_ball() -> void:
     var pull = ball.global_position - get_global_mouse_position()
     if pull.length() < 12.0:
         dragging = false
+        ball.freeze = true
         _update_trajectory()
         return
 
     var launch_velocity = pull * 4.6
+    ball.freeze = false
     ball.linear_velocity = launch_velocity
     ball.angular_velocity = 0.0
     ball.sleeping = false
@@ -78,7 +84,7 @@ func _update_trajectory() -> void:
     var pos = ball.global_position
     var points: PackedVector2Array = PackedVector2Array()
 
-    for i in range(16):
+    for i in range(18):
         points.append(pos)
         velocity += Vector2(0, 980.0) * 0.12
         pos += velocity * 0.12
@@ -89,7 +95,6 @@ func _update_trajectory() -> void:
 func _on_target_hit(body: Node, target: RigidBody2D) -> void:
     if body != ball:
         return
-
     if target.is_queued_for_deletion():
         return
 

@@ -7,3 +7,4 @@ func reset_motion() -> void:
     linear_velocity = Vector2.ZERO
     angular_velocity = 0.0
     sleeping = false
+    freeze = false
