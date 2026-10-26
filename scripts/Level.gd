@@ -3,13 +3,13 @@ extends Node2D
 @onready var ball: RigidBody2D = $Ball
 @onready var trajectory: Node2D = $Trajectory
 @onready var shot_label: Label = $UI/ShotLabel
-@onready var goal_label: Label = $UI/GoalLabel
-@onready var result_label: Label = $UI/ResultLabel
+@onready var goal_label: Label = $UI.get_node_or_null("GoalLabel")
+@onready var result_label: Label = $UI.get_node_or_null("ResultLabel")
 @onready var restart_button: Button = $UI/RestartButton
 @onready var main_menu_button: Button = $UI/MainMenuButton
 @onready var ball_spawn: Marker2D = $BallSpawn
-@onready var goal_area: Area2D = $GoalArea
-@onready var special_orb: RigidBody2D = $SpecialOrb
+@onready var goal_area: Area2D = get_node_or_null("GoalArea")
+@onready var special_orb: RigidBody2D = get_node_or_null("SpecialOrb")
 
 var dragging := false
 var shot_count := 0
@@ -23,7 +23,9 @@ func _ready() -> void:
 
     restart_button.pressed.connect(_on_restart_pressed)
     main_menu_button.pressed.connect(_on_main_menu_pressed)
-    goal_area.body_entered.connect(_on_goal_entered)
+
+    if goal_area:
+        goal_area.body_entered.connect(_on_goal_entered)
 
     _update_ui()
     _update_trajectory()
@@ -57,7 +59,7 @@ func _process(_delta: float) -> void:
     if ball.global_position.y > 900:
         _trigger_lose()
 
-    if special_orb and special_orb.global_position.y > 900:
+    if is_instance_valid(special_orb) and special_orb.global_position.y > 900:
         _trigger_lose()
 
 func _can_drag_ball() -> bool:
@@ -110,7 +112,8 @@ func _update_trajectory() -> void:
 
 func _update_ui() -> void:
     shot_label.text = "Shots: %d" % shot_count
-    goal_label.text = "Goal: Bring orb to the cup"
+    if goal_label:
+        goal_label.text = "Goal: Bring orb to the cup"
 
 func _trigger_win() -> void:
     if game_over:
@@ -118,12 +121,18 @@ func _trigger_win() -> void:
 
     game_over = true
     result_state = "won"
-    result_label.text = "YOU WON!"
-    result_label.visible = true
+
+    if result_label:
+        result_label.text = "YOU WON!"
+        result_label.visible = true
+
     restart_button.visible = true
     main_menu_button.visible = true
-    ball.freeze = true
-    special_orb.freeze = true
+
+    if is_instance_valid(ball):
+        ball.freeze = true
+    if is_instance_valid(special_orb):
+        special_orb.freeze = true
 
     for block in get_tree().get_nodes_in_group("blocks"):
         if is_instance_valid(block):
@@ -135,12 +144,18 @@ func _trigger_lose() -> void:
 
     game_over = true
     result_state = "lost"
-    result_label.text = "YOU LOSE!"
-    result_label.visible = true
+
+    if result_label:
+        result_label.text = "YOU LOSE!"
+        result_label.visible = true
+
     restart_button.visible = true
     main_menu_button.visible = true
-    ball.freeze = true
-    special_orb.freeze = true
+
+    if is_instance_valid(ball):
+        ball.freeze = true
+    if is_instance_valid(special_orb):
+        special_orb.freeze = true
 
     for block in get_tree().get_nodes_in_group("blocks"):
         if is_instance_valid(block):
