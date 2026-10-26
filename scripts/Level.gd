@@ -2,8 +2,11 @@ extends Node2D
 
 @onready var ball: RigidBody2D = $Ball
 @onready var trajectory: Node2D = $Trajectory
-@onready var shot_label: Label = $UILayer/ShotsLabel
-@onready var complete_label: Label = $UILayer/CompleteLabel
+@onready var shot_label: Label = $UI/ShotLabel
+@onready var target_label: Label = $UI/TargetLabel
+@onready var complete_label: Label = $UI/CompleteLabel
+@onready var restart_button: Button = $UI/RestartButton
+@onready var menu_button: Button = $UI/MainMenuButton
 @onready var ball_spawn: Marker2D = $BallSpawn
 
 var dragging := false
@@ -19,7 +22,9 @@ func _ready() -> void:
         if is_instance_valid(target):
             target.body_entered.connect(_on_target_hit.bind(target))
 
-    _update_ui()
+    restart_button.pressed.connect(_on_restart_pressed)
+    menu_button.pressed.connect(_on_main_menu_pressed)
+    _update_labels()
     _update_trajectory()
 
 func _input(event: InputEvent) -> void:
@@ -27,7 +32,7 @@ func _input(event: InputEvent) -> void:
         var mouse_pos = get_global_mouse_position()
 
         if event.pressed:
-            if _can_drag_ball() and (ball.global_position - mouse_pos).length() < 110.0:
+            if _can_drag_ball() and ball.global_position.distance_to(mouse_pos) < 140.0:
                 dragging = true
                 ball.freeze = true
                 ball.linear_velocity = Vector2.ZERO
@@ -52,20 +57,20 @@ func _launch_ball() -> void:
         return
 
     var pull = ball.global_position - get_global_mouse_position()
-    if pull.length() < 12.0:
+    if pull.length() < 16.0:
         dragging = false
         ball.freeze = true
         _update_trajectory()
         return
 
-    var launch_velocity = pull * 4.6
+    var launch_velocity = pull * 4.2
     ball.freeze = false
     ball.linear_velocity = launch_velocity
     ball.angular_velocity = 0.0
     ball.sleeping = false
     dragging = false
     shot_count += 1
-    _update_ui()
+    _update_labels()
     _update_trajectory()
 
 func _update_trajectory() -> void:
@@ -80,7 +85,7 @@ func _update_trajectory() -> void:
         trajectory.queue_redraw()
         return
 
-    var velocity = drag * 4.6
+    var velocity = drag * 4.2
     var pos = ball.global_position
     var points: PackedVector2Array = PackedVector2Array()
 
@@ -92,6 +97,17 @@ func _update_trajectory() -> void:
     trajectory.points = points
     trajectory.queue_redraw()
 
+func _count_targets() -> int:
+    var count := 0
+    for target in get_tree().get_nodes_in_group("targets"):
+        if is_instance_valid(target) and not target.is_queued_for_deletion():
+            count += 1
+    return count
+
+func _update_labels() -> void:
+    shot_label.text = "Shots: %d" % shot_count
+    target_label.text = "Targets: %d" % _count_targets()
+
 func _on_target_hit(body: Node, target: RigidBody2D) -> void:
     if body != ball:
         return
@@ -99,18 +115,22 @@ func _on_target_hit(body: Node, target: RigidBody2D) -> void:
         return
 
     target.queue_free()
-    _check_for_victory()
+    var remaining = _count_targets()
+    _update_labels()
 
-func _check_for_victory() -> void:
-    for target in get_tree().get_nodes_in_group("targets"):
-        if is_instance_valid(target) and not target.is_queued_for_deletion():
-            return
+    if remaining == 0:
+        _finish_level()
 
+func _finish_level() -> void:
     level_complete = true
     complete_label.visible = true
-
-func _update_ui() -> void:
-    shot_label.text = "Shots: %d" % shot_count
+    ball.freeze = true
 
 func _restart_level() -> void:
     get_tree().reload_current_scene()
+
+func _on_restart_pressed() -> void:
+    _restart_level()
+
+func _on_main_menu_pressed() -> void:
+    get_tree().change_scene_to_file("res://scenes/MainMenu.tscn")
